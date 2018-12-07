@@ -17,7 +17,7 @@ public class BinaryHeap<T extends Comparable<? super T>> {
 
     // add method: resize pq if needed
     public boolean add(T x) {
-        if(size+1>pq.length)
+        if(size == pq.length)
             return false;
         move(size, x);
         percolateUp(size);
@@ -45,8 +45,7 @@ public class BinaryHeap<T extends Comparable<? super T>> {
             return null;
         T min;
         min =(T) pq[0];
-        pq[0]= pq[size-1];
-        size--;
+        pq[0]= pq[--size];
         percolateDown(0);
         return min;
     }
@@ -91,7 +90,7 @@ public class BinaryHeap<T extends Comparable<? super T>> {
         while(c<=(size-1)){
             if(c<size-1 && pq[c].compareTo(pq[c+1])>0)
                 c++;
-            if(x.compareTo((T)pq[c])>0)
+            if(x.compareTo((T)pq[c])<=0)
                 break;
             move(index,(T)pq[c]);
             index=c;
@@ -158,17 +157,21 @@ public class BinaryHeap<T extends Comparable<? super T>> {
 
     public static void main(String[] args) {
 	Integer[] arr = {0,9,7,5,3,1,8,6,4,2};
+	Integer[] arr1 = {0,9,7,5,3,1,8,6,4,2};
 	BinaryHeap<Integer> h = new BinaryHeap(arr.length);
+	PriorityQueue<Integer> j = new PriorityQueue<>();
 
 	System.out.print("Before:");
 	for(Integer x: arr) {
 	    h.offer(x);
+	    j.offer(x);
 	    System.out.print(" " + x);
 	}
 	System.out.println();
 
 	for(int i=0; i<arr.length; i++) {
 	    arr[i] = h.poll();
+	    arr1[i] = j.poll();
 	}
 
 	System.out.print("After :");
@@ -176,5 +179,8 @@ public class BinaryHeap<T extends Comparable<? super T>> {
 	    System.out.print(" " + x);
 	}
 	System.out.println();
+    for(Integer x: arr1) {
+        System.out.print(" " + x);
+    }
     }
 }

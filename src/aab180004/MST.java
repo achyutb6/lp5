@@ -36,6 +36,7 @@ public class MST extends GraphAlgorithm<MST.MSTVertex> {
 	int d; //distance
 	Vertex u;
 	int rank;
+	int index;
 
 	MSTVertex(Vertex u) {
 		parent = this;
@@ -67,11 +68,16 @@ public class MST extends GraphAlgorithm<MST.MSTVertex> {
 			rv.parent = this;
 		}
 	}
+	@Override
+	public void putIndex(int index) {
+		this.index = index;
+	}
 
-	public void putIndex(int index) { }
+	@Override
+	public int getIndex() { return this.index; }
 
-	public int getIndex() { return 0; }
 
+	@Override
 	public int compareTo(MSTVertex other) {
 	    return Integer.compare(this.d,other.d);
 	}
@@ -128,7 +134,7 @@ public class MST extends GraphAlgorithm<MST.MSTVertex> {
 
     public long prim2(Vertex s) {
 	algorithm = "PriorityQueue<Vertex>";
-        mst = new LinkedList<>();
+	mst = new LinkedList<>();
 	wmst = 0;
  	for(Vertex u : g){
 		get(u).seen = false;
@@ -173,12 +179,16 @@ public class MST extends GraphAlgorithm<MST.MSTVertex> {
 
 	while(!q.isEmpty()){
 		Edge e = q.remove();
+		Vertex u = e.fromVertex();
 		Vertex v = e.toVertex();
-		if(get(v).seen){
+		if(get(u).seen && get(v).seen){
 			continue;
+		}else if(!get(u).seen && get(v).seen){
+			v = e.fromVertex();
+			u = e.toVertex();
 		}
 		get(v).seen = true;
-		get(v).parent = get(e.otherEnd(v));
+		get(v).parent = get(u);
 		wmst += e.getWeight();
 		mst.add(e);
 		for(Edge e2 : g.incident(v)){
@@ -211,7 +221,7 @@ public class MST extends GraphAlgorithm<MST.MSTVertex> {
 
     public static void main(String[] args) throws FileNotFoundException {
 	Scanner in;
-	int choice = 1;  // Kruskal
+	int choice = 2;  // Kruskal
         if (args.length == 0 || args[0].equals("-")) {
             in = new Scanner(System.in);
         } else {
