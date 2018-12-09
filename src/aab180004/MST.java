@@ -12,12 +12,7 @@ import rbk.Graph;
 import aab180004.BinaryHeap.Index;
 import aab180004.BinaryHeap.IndexedHeap;
 
-import java.util.Arrays;
-import java.util.PriorityQueue;
-import java.util.Scanner;
-import java.util.Comparator;
-import java.util.List;
-import java.util.LinkedList;
+import java.util.*;
 import java.io.FileNotFoundException;
 import java.io.File;
 
@@ -99,6 +94,7 @@ public class MST extends GraphAlgorithm<MST.MSTVertex> {
 				ru.union(rv);
 			}
 		}
+
         return wmst;
     }
 
@@ -143,23 +139,32 @@ public class MST extends GraphAlgorithm<MST.MSTVertex> {
 	}
 	get(s).d = 0;
 	PriorityQueue<MSTVertex> q = new PriorityQueue<>();
- 	q.add(get(s));
+	q.add(get(s));
 
  	while (!q.isEmpty()){
- 		MSTVertex u = q.remove();
- 		if(!u.seen){
- 			u.seen = true;
- 			wmst += u.d;
-			for(Edge e : g.incident(u.u)){
-				MSTVertex v = get(e.otherEnd(u.u));
-				if(!v.seen && e.getWeight() < v.d){
-					v.d = e.getWeight();
-					v.parent = u;
-					q.add(v);
+ 		Vertex u = q.remove().u;
+ 		if(!get(u).seen){
+ 			get(u).seen = true;
+ 			wmst += get(u).d;
+			for(Edge e : g.incident(u)){
+				Vertex v = e.otherEnd(u);
+				if(!get(v).seen && e.getWeight() < get(v).d){
+					get(v).d = e.getWeight();
+					get(v).parent = get(u);
+					q.add(get(v));
 				}
 			}
 		}
 	}
+
+		for(Vertex v : g) {
+			System.out.print(v.getName()-1 + " : ");
+			if (get(v).parent != null) {
+				System.out.println(get(v).parent.u.getName()-1);
+			}else{
+				System.out.println("null");
+			}
+		}
 	return wmst;
     }
 
