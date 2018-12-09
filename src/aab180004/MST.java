@@ -1,5 +1,15 @@
-// Starter code for LP5
-
+/**
+ * Project Description:
+ *
+ * Implement BinaryHeap and its nested class IndexedHeap, and the three versions of
+ * Prim's algorithm discussed in class, and Kruskal's algorithm.  Starter code is provided.
+ * Transfer your BinaryHeap code from SP3.  Some minor modifications may be required.
+ *
+ * 	@author Achyut Arun Bhandiwad - AAB180004
+ *  @author Nirbhay Sibal - NXS180002
+ *  @author Vineet Vats - VXV180008
+ *
+ */
 package aab180004;
 
 import rbk.Graph.Vertex;
@@ -18,34 +28,39 @@ import java.io.File;
 
 public class MST extends GraphAlgorithm<MST.MSTVertex> {
     String algorithm;
-    public long wmst;
-    List<Edge> mst;
+    public long wmst; //weight of the MST
+    List<Edge> mst;   //List of edges included in MST
     
     MST(Graph g) {
 	super(g, new MSTVertex((Vertex) null));
     }
 
     public static class MSTVertex implements Index, Comparable<MSTVertex>, Factory {
-	boolean seen;
-	MSTVertex parent;
+	boolean seen; //seen flag
+	MSTVertex parent; //parent vertex
 	int d; //distance
-	Vertex u;
+	Vertex vertex; //copy of vertex object
 	int rank;
 	int index;
 
-	MSTVertex(Vertex u) {
+	MSTVertex(Vertex vertex) {
 		parent = this;
 		rank = 0;
-		this.u = u;
+		this.vertex = vertex;
 	}
 
-	MSTVertex(MSTVertex u) {  // for prim2
+	MSTVertex(MSTVertex u) {
+		this.vertex = u.vertex;
+		this.d = u.d;
 	}
 
 	public MSTVertex make(Vertex u) {
 		return new MSTVertex(u);
 	}
 
+	/**
+	 * find method of union_find
+	 */
 	public MSTVertex find(){
 		if(this != parent){
 			parent = parent.find();
@@ -53,6 +68,10 @@ public class MST extends GraphAlgorithm<MST.MSTVertex> {
 		return parent;
 	}
 
+	/**
+	 * union method of union_find
+	 * @param rv
+	 */
 	public void union(MSTVertex rv){
 		if(this.rank > rv.rank){
 			rv.parent = this;
@@ -63,6 +82,7 @@ public class MST extends GraphAlgorithm<MST.MSTVertex> {
 			rv.parent = this;
 		}
 	}
+
 	@Override
 	public void putIndex(int index) {
 		this.index = index;
@@ -78,7 +98,11 @@ public class MST extends GraphAlgorithm<MST.MSTVertex> {
 	}
     }
 
-    public long kruskal() {
+	/**
+	 * Kruskal algorithm implementation using the disjoint-set data structure with Union/Find operations
+	 * @return wmst
+	 */
+	public long kruskal() {
 		algorithm = "Kruskal";
 		Edge[] edgeArray = g.getEdgeArray();
 		Arrays.sort(edgeArray);
@@ -98,111 +122,130 @@ public class MST extends GraphAlgorithm<MST.MSTVertex> {
         return wmst;
     }
 
-    public long prim3(Vertex s) {
-	algorithm = "indexed heaps";
-        mst = new LinkedList<>();
-	wmst = 0;
-	IndexedHeap<MSTVertex> q = new IndexedHeap<>(g.size());
-	for(Vertex u : g){
+	/**
+	 * Implementation #3 using indexed priority queue of vertices
+	 * Node v V S stores in v.d, the weight of a smallest edge that connects ∈ − v to some u∈S
+	 * @param s source vertex
+	 * @return wmst
+	 */
+	public long prim3(Vertex s) {
+		algorithm = "indexed heaps";
+		mst = new LinkedList<>();
+		wmst = 0;
+		IndexedHeap<MSTVertex> q = new IndexedHeap<>(g.size());
+
+		//initialization
+		for(Vertex u : g){
+				get(u).seen = false;
+				get(u).parent = null;
+				get(u).d = Integer.MAX_VALUE;
+			}
+		get(s).d = 0;
+
+		//adding all the vertex to the indexed min heap
+		for(Vertex u : g){
+			q.add(get(u));
+		}
+
+		while(!q.isEmpty()){
+			MSTVertex u = q.remove();
+			u.seen = true;
+			wmst += u.d;
+			for(Edge e : g.incident(u.vertex)){
+				MSTVertex v = get(e.otherEnd(u.vertex));
+				if(!v.seen && e.getWeight() < v.d){
+					v.d = e.getWeight();
+					v.parent = u;
+					q.decreaseKey(v);
+				}
+			}
+		}
+		return wmst;
+    }
+
+	/**
+	 * Implementation #2 using a priority queue of vertices, allowing duplicates
+	 * Node v ∈ V−S stores in v.d, the weight of a smallest edge that connects v to some u∈S
+	 * @param s source vertex
+	 * @return wmst
+	 */
+	public long prim2(Vertex s) {
+		algorithm = "PriorityQueue<Vertex>";
+		mst = new LinkedList<>();
+		wmst = 0;
+		//initialization
+		for(Vertex u : g){
 			get(u).seen = false;
 			get(u).parent = null;
 			get(u).d = Integer.MAX_VALUE;
 		}
-	get(s).d = 0;
-	for(Vertex u : g){
-		q.add(get(u));
-	}
-	while(!q.isEmpty()){
-		MSTVertex u = q.remove();
-		u.seen = true;
-		wmst += u.d;
-		for(Edge e : g.incident(u.u)){
-			MSTVertex v = get(e.otherEnd(u.u));
-			if(!v.seen && e.getWeight() < v.d){
-				v.d = e.getWeight();
-				v.parent = u;
-				q.decreaseKey(v);
-			}
-		}
-	}
-	return wmst;
-    }
+		get(s).d = 0;
+		PriorityQueue<MSTVertex> q = new PriorityQueue<>();
+		q.add(get(s));
 
-    public long prim2(Vertex s) {
-	algorithm = "PriorityQueue<Vertex>";
-	mst = new LinkedList<>();
-	wmst = 0;
- 	for(Vertex u : g){
-		get(u).seen = false;
-		get(u).parent = null;
-		get(u).d = Integer.MAX_VALUE;
-	}
-	get(s).d = 0;
-	PriorityQueue<MSTVertex> q = new PriorityQueue<>();
-	q.add(get(s));
-
- 	while (!q.isEmpty()){
- 		Vertex u = q.remove().u;
- 		if(!get(u).seen){
- 			get(u).seen = true;
- 			wmst += get(u).d;
-			for(Edge e : g.incident(u)){
-				Vertex v = e.otherEnd(u);
-				if(!get(v).seen && e.getWeight() < get(v).d){
-					get(v).d = e.getWeight();
-					get(v).parent = get(u);
-					q.add(get(v));
+		while (!q.isEmpty()){
+			Vertex u = q.remove().vertex;
+			if(!get(u).seen){
+				get(u).seen = true;
+				wmst += get(u).d;
+				for(Edge e : g.incident(u)){
+					Vertex v = e.otherEnd(u);
+					if(!get(v).seen && e.getWeight() < get(v).d){
+						get(v).d = e.getWeight();
+						get(v).parent = get(u);
+						q.add(new MSTVertex(get(v)));
+					}
 				}
 			}
 		}
-	}
-
-		for(Vertex v : g) {
-			System.out.print(v.getName()-1 + " : ");
-			if (get(v).parent != null) {
-				System.out.println(get(v).parent.u.getName()-1);
-			}else{
-				System.out.println("null");
-			}
-		}
-	return wmst;
+		return wmst;
     }
 
-    public long prim1(Vertex s) {
-	algorithm = "PriorityQueue<Edge>";
-        mst = new LinkedList<>();
-	wmst = 0;
-	for(Vertex u : g){
-		get(u).seen = false;
-		get(u).parent = null;
-	}
-	get(s).seen = true;
-	PriorityQueue<Edge> q = new PriorityQueue<>();
-	for(Edge e: g.incident(s)){
-		q.add(e);
-	}
+	/**
+	 * Implementation #1 using a priority queue of edges
+	 * @param s source vertex
+	 * @return weight of MST
+	 */
+	public long prim1(Vertex s) {
+		algorithm = "PriorityQueue<Edge>";
+		mst = new LinkedList<>();
+		wmst = 0;
 
-	while(!q.isEmpty()){
-		Edge e = q.remove();
-		Vertex u = e.fromVertex();
-		Vertex v = e.toVertex();
-		if(get(u).seen && get(v).seen){
-			continue;
-		}else if(!get(u).seen && get(v).seen){
-			v = e.fromVertex();
-			u = e.toVertex();
+		//initializing the vertex
+		for(Vertex u : g){
+			get(u).seen = false;
+			get(u).parent = null;
 		}
-		get(v).seen = true;
-		get(v).parent = get(u);
-		wmst += e.getWeight();
-		mst.add(e);
-		for(Edge e2 : g.incident(v)){
-			if(!get(e2.otherEnd(v)).seen){
-				q.add(e2);
+
+		get(s).seen = true;
+
+		PriorityQueue<Edge> q = new PriorityQueue<>();
+		//Adding all the edges incident to src to the min heap
+		for(Edge e: g.incident(s)){
+			q.add(e);
+		}
+
+		while(!q.isEmpty()){
+			Edge e = q.remove();
+			Vertex u = e.fromVertex();
+			Vertex v = e.toVertex();
+			if(get(u).seen && get(v).seen){
+				continue; //skip if both visited
+			}else if(!get(u).seen && get(v).seen){
+				v = e.fromVertex();  //swap u and v
+				u = e.toVertex();
+			}
+			get(v).seen = true;
+			get(v).parent = get(u);
+			wmst += e.getWeight();
+			mst.add(e);
+			for(Edge ev : g.incident(v)){
+				if(!get(ev.otherEnd(v)).seen){
+					q.add(ev);
+				}
 			}
 		}
-	}
-	return wmst;
+		return wmst;
     }
 
     public static MST mst(Graph g, Vertex s, int choice) {
@@ -226,7 +269,7 @@ public class MST extends GraphAlgorithm<MST.MSTVertex> {
 
     public static void main(String[] args) throws FileNotFoundException {
 	Scanner in;
-	int choice = 2;  // Kruskal
+	int choice = 0;  // Kruskal
         if (args.length == 0 || args[0].equals("-")) {
             in = new Scanner(System.in);
         } else {

@@ -1,6 +1,15 @@
-// Starter code for LP5
-
-// Change to your netid
+/**
+ * Project Description:
+ *
+ * Implement BinaryHeap and its nested class IndexedHeap, and the three versions of
+ * Prim's algorithm discussed in class, and Kruskal's algorithm.  Starter code is provided.
+ * Transfer your BinaryHeap code from SP3.  Some minor modifications may be required.
+ *
+ * 	@author Achyut Arun Bhandiwad - AAB180004
+ *  @author Nirbhay Sibal - NXS180002
+ *  @author Vineet Vats - VXV180008
+ *
+ */
 package aab180004;
 
 import java.util.*;
